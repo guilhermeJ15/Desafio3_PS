@@ -6,14 +6,17 @@ export class GoogleMapsService {
   private readonly apiKey = process.env.GOOGLE_MAPS_API_KEY;
 
   async getCoordinatesFromAddress(address: string): Promise<{ lat: number; lng: number }> {
-    const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json`, {
-      params: {
-        address,
-        key: this.apiKey,
-      },
-    });
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+      address,
+    )}&key=${this.apiKey}`;
 
-    const location = response.data.results[0].geometry.location;
+    const response = await axios.get(url);
+    const location = response.data.results[0]?.geometry.location;
+
+    if (!location) {
+      throw new Error('Não foi possível obter coordenadas do endereço.');
+    }
+
     return {
       lat: location.lat,
       lng: location.lng,
@@ -21,15 +24,17 @@ export class GoogleMapsService {
   }
 
   async calculateDistance(origin: string, destination: string): Promise<number> {
-    const response = await axios.get(`https://maps.googleapis.com/maps/api/distancematrix/json`, {
-      params: {
-        origins: origin,
-        destinations: destination,
-        key: this.apiKey,
-      },
-    });
+    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
+      origin,
+    )}&destinations=${encodeURIComponent(destination)}&key=${this.apiKey}`;
 
-    const distanceInMeters = response.data.rows[0].elements[0].distance.value;
-    return distanceInMeters / 1000; // km
+    const response = await axios.get(url);
+    const element = response.data.rows[0]?.elements[0];
+
+    if (!element || element.status !== 'OK') {
+      throw new Error('Não foi possível calcular a distância.');
+    }
+
+    return element.distance.value / 1000; 
   }
 }

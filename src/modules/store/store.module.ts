@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { StoreController } from './controller/store.controller';
-import { StoreService } from './service/store.service';
+import { StoreController } from './controllers/store.controller';
+import { StoreService } from './services/store.service';
 import { StoreRepository } from './repositories/store.repository';
-
 import { Store, StoreSchema } from './schemas/store.schema';
 
 import { ViaCepService } from 'src/core/services/viacep.service';
@@ -13,7 +12,7 @@ import { MelhorEnvioService } from 'src/core/services/melhor-envio.service';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Store.name, schema: StoreSchema }])
+    MongooseModule.forFeature([{ name: Store.name, schema: StoreSchema }]),
   ],
   controllers: [StoreController],
   providers: [
