@@ -92,7 +92,7 @@ describe('StoreService - CRUD + Nearest Store', () => {
     await expect(service.remove('999')).rejects.toThrow('Loja não encontrada');
   });
 
-  // NEAREST STORES
+  
   it('should return the nearest store by CEP', async () => {
     const mockViaCep = {
       logradouro: 'Rua Teste',
@@ -182,7 +182,7 @@ describe('StoreService - CRUD + Nearest Store', () => {
     });
 
     mockRepo.findAll.mockResolvedValue([store]);
-    mockMapsService.calculateDistance.mockResolvedValue(60); // > 50 km
+    mockMapsService.calculateDistance.mockResolvedValue(60); 
 
     mockMelhorEnvioService.getFreight.mockResolvedValue([
       {
@@ -219,7 +219,7 @@ describe('StoreService - CRUD + Nearest Store', () => {
     });
 
     mockRepo.findAll.mockResolvedValue([store]);
-    mockMapsService.calculateDistance.mockResolvedValue(5); // perto
+    mockMapsService.calculateDistance.mockResolvedValue(5); 
 
     mockMelhorEnvioService.getFreight.mockResolvedValue([
       {

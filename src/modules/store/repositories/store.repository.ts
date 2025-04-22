@@ -11,27 +11,26 @@ export class StoreRepository {
     @InjectModel(Store.name) private readonly storeModel: Model<Store>,
   ) {}
 
-  // Create
+  
   async create(data: CreateStoreDto): Promise<Store> {
     return this.storeModel.create(data);
   }
 
-  // Read all
+  
   async findAll(): Promise<Store[]> {
     return this.storeModel.find().exec();
   }
 
-  // Read by ID
+  
   async findById(id: string): Promise<Store | null> {
     return this.storeModel.findById(id).exec();
   }
 
-  // Read by State
   async findByState(state: string): Promise<Store[]> {
     return this.storeModel.find({ state }).exec();
   }
 
-  // Update
+ 
   async update(
     id: string,
     data: Partial<CreateStoreDto>,
@@ -41,7 +40,7 @@ export class StoreRepository {
       .exec();
   }
 
-  // Delete
+  
   async delete(id: string): Promise<Store | null> {
     return this.storeModel.findByIdAndDelete(id).exec();
   }

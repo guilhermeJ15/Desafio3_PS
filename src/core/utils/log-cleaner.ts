@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-export function cleanOldLogs(daysToKeep = 7) {
+export function cleanOldLogs(daysToKeep = 4) {
   const logDir = path.resolve(__dirname, '../../../logs');
   if (!fs.existsSync(logDir)) return;
 

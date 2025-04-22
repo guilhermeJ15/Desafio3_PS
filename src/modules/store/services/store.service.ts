@@ -9,9 +9,9 @@ import { GoogleMapsService } from '../../../core/services/google-maps.service';
 import { MelhorEnvioService } from '../../../core/services/melhor-envio.service';
 
 import { ResponseFreteDto } from 'src/core/model/store/dto/response-frete.dto';
-import { ResponsePinDto } from 'src/core/model/store/dto/response-pin.dto';
+
 import { ResponseStoreByCepDto } from 'src/core/model/store/dto/response-store-by-cep.dto';
-import { ResponseStoreListDto } from 'src/core/model/store/dto/response-store-list.dto';
+
 
 @Injectable()
 export class StoreService {
@@ -22,29 +22,29 @@ export class StoreService {
     private readonly melhor: MelhorEnvioService,
   ) {}
 
-  // Create
+  
   async create(dto: CreateStoreDto) {
     return this.repo.create(dto);
   }
 
-  // Read all
+ 
   async findAll() {
     return this.repo.findAll();
   }
 
-  // Read by ID
+  
   async findById(id: string) {
     const store = await this.repo.findById(id);
     if (!store) throw new NotFoundException('Loja não encontrada');
     return store;
   }
 
-  // Read by State
+ 
   async findByState(uf: string) {
     return this.repo.findByState(uf.toUpperCase());
   }
 
-  // Read by CEP (with freight calculation)
+  
   async findNearestByCep(cep: string): Promise<ResponseStoreByCepDto> {
     const cepInfo = await this.viaCep.getAddressByCep(cep);
     const origin = `${cepInfo.logradouro}, ${cepInfo.localidade} - ${cepInfo.uf}`;
@@ -94,14 +94,14 @@ export class StoreService {
   }
   
 
-  // Update
+  
   async update(id: string, dto: UpdateStoreDto) {
     const updated = await this.repo.update(id, dto);
     if (!updated) throw new NotFoundException('Loja não encontrada');
     return updated;
   }
 
-  // Delete
+  
   async remove(id: string) {
     const deleted = await this.repo.delete(id);
     if (!deleted) throw new NotFoundException('Loja não encontrada');
@@ -115,4 +115,11 @@ export class StoreService {
   async findByStateFiltered(uf: string, type?: 'PDV' | 'LOJA', limit = 10, offset = 0) {
     return this.repo.findByStateFiltered(uf.toUpperCase(), type, limit, offset);
   }
+
+  
+
+
+
 }
+
+

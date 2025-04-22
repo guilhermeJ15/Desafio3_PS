@@ -12,7 +12,7 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
       isGlobal: true,
     }),
 
-    // Conecta ao MongoDB 
+    
     MongooseModule.forRoot(
       (() => {
         const uri = process.env.MONGO_URI;
@@ -20,13 +20,11 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
         return uri;
       })(),
     ),
-
-   
     StoreModule,
   ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*'); // middleware de logs global
+    consumer.apply(LoggerMiddleware).forRoutes('*'); 
   }
 }

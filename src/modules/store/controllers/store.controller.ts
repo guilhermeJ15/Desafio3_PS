@@ -44,11 +44,11 @@ export class StoreController {
     return this.storeService.findById(id);
   }
 
-  @Get('state/:uf')
-  @ApiOperation({ summary: 'Buscar lojas por estado' })
-  findByState(@Param('uf') uf: string) {
-    return this.storeService.findByState(uf);
-  }
+  // @Get('state/:uf')
+  // @ApiOperation({ summary: 'Buscar lojas pelo estados' })
+  // findByState(@Param('uf') uf: string) {
+  //   return this.storeService.findByState(uf);
+  // }
 
   @Get('nearest/:cep')
 @ApiOperation({ summary: 'Buscar apenas a loja mais próxima pelo CEP' })
@@ -77,4 +77,6 @@ async findNearestByCep(@Param('cep') cep: string) {
   remove(@Param('id') id: string) {
     return this.storeService.remove(id);
   }
+
 }
+
