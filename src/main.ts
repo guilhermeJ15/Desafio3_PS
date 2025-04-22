@@ -2,8 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-import { WinstonModule } from 'nest-winston';
-import * as winston from 'winston';
 import * as dotenv from 'dotenv';
 import { cleanOldLogs } from './core/utils/log-cleaner';
 
@@ -13,20 +11,9 @@ async function bootstrap() {
    // Limpa logs com mais de 4 dias
   cleanOldLogs(4);
 
-  const app = await NestFactory.create(AppModule, {
-    logger: WinstonModule.createLogger({
-      transports: [
-        new winston.transports.Console({
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            winston.format.json()
-          ),
-        }),
-      ],
-    }),
-  });
+  const app = await NestFactory.create(AppModule);
 
-  // Ativa validação com class-validator
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,              // remove propriedades extras
@@ -34,9 +21,6 @@ async function bootstrap() {
       transform: true,              // converte payload para DTO automaticamente
     }),
   );
-
-  // Libera acesso CORS
-  app.enableCors();
 
   // Configuração Swagger
   const config = new DocumentBuilder()

@@ -32,20 +32,6 @@ export class LoggerMiddleware implements NestMiddleware {
         }),
       ],
     });
-
-    // deixa o console colorido 
-    if (process.env.NODE_ENV !== 'production') {
-      this.logger.add(
-        new winston.transports.Console({
-          format: winston.format.combine(
-            winston.format.colorize(),
-            winston.format.printf(({ level, message, timestamp, ...meta }) => {
-              return `[${timestamp}] ${level}: ${message} ${JSON.stringify(meta)}`;
-            }),
-          ),
-        }),
-      );
-    }
   }
 
   use(req: Request, res: Response, next: NextFunction): void {

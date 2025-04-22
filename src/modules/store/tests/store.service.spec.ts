@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StoreService } from '../services/store.service';
 import { StoreRepository } from '../repositories/store.repository';
-import { ViaCepService } from 'src/core/services/viacep.service';
-import { GoogleMapsService } from 'src/core/services/google-maps.service';
-import { MelhorEnvioService } from 'src/core/services/melhor-envio.service';
+import { ViaCepService } from '../../../core/services/viacep.service';
+import { GoogleMapsService } from '../../../core/services/google-maps.service';
+import { MelhorEnvioService } from '../../../core/services/melhor-envio.service';
 
-describe('StoreService - CRUD + Nearest', () => {
+describe('StoreService - CRUD + Nearest Store', () => {
   let service: StoreService;
   let repo: StoreRepository;
 
@@ -61,7 +61,7 @@ describe('StoreService - CRUD + Nearest', () => {
     repo = module.get<StoreRepository>(StoreRepository);
   });
 
-  // 🧪 CREATE
+  // CRUD
   it('should create a store', async () => {
     const dto: any = { ...mockStore };
     delete dto._id;
@@ -70,33 +70,29 @@ describe('StoreService - CRUD + Nearest', () => {
     expect(result.storeName).toBe('Loja A');
   });
 
-  // 🧪 UPDATE
   it('should update a store', async () => {
     const updated = await service.update('123', { storeName: 'Atualizada' });
     expect(repo.update).toHaveBeenCalledWith('123', { storeName: 'Atualizada' });
     expect(updated.storeName).toBe('Atualizada');
   });
 
-  // 🧪 DELETE
   it('should delete a store', async () => {
     const result = await service.remove('123');
     expect(repo.delete).toHaveBeenCalledWith('123');
     expect(result).toEqual({ deleted: true });
   });
 
-  // 🧪 UPDATE ERROR
   it('should throw if updating a non-existent store', async () => {
     jest.spyOn(repo, 'update').mockResolvedValueOnce(null);
     await expect(service.update('999', { storeName: 'Nada' })).rejects.toThrow('Loja não encontrada');
   });
 
-  // 🧪 DELETE ERROR
   it('should throw if deleting a non-existent store', async () => {
     jest.spyOn(repo, 'delete').mockResolvedValueOnce(null);
     await expect(service.remove('999')).rejects.toThrow('Loja não encontrada');
   });
 
-  // 🧪 NEAREST BY CEP – PDV mais próximo
+  // NEAREST STORES
   it('should return the nearest store by CEP', async () => {
     const mockViaCep = {
       logradouro: 'Rua Teste',
@@ -118,8 +114,8 @@ describe('StoreService - CRUD + Nearest', () => {
     mockViaCepService.getAddressByCep.mockResolvedValue(mockViaCep);
     mockRepo.findAll.mockResolvedValue(mockStoreList);
     mockMapsService.calculateDistance
-      .mockResolvedValueOnce(40) // Loja A
-      .mockResolvedValueOnce(60); // Loja B
+      .mockResolvedValueOnce(40) // Loja A (PDV)
+      .mockResolvedValueOnce(60); // Loja B (LOJA)
 
     const result = await service.findNearestByCep('01001-000');
     expect(result.name).toBe('Loja A');
@@ -127,7 +123,6 @@ describe('StoreService - CRUD + Nearest', () => {
     expect(result.value[0].description).toBe('Motoboy');
   });
 
-  // 🧪 NEAREST BY CEP – LOJA mais próxima
   it('should return a LOJA if it is closer than a PDV', async () => {
     const mockStoreList = [
       { ...mockStore },
@@ -149,7 +144,7 @@ describe('StoreService - CRUD + Nearest', () => {
     mockRepo.findAll.mockResolvedValue(mockStoreList);
 
     mockMapsService.calculateDistance
-      .mockResolvedValueOnce(40) // Loja A
+      .mockResolvedValueOnce(40) // Loja A (PDV)
       .mockResolvedValueOnce(20); // Loja B (LOJA mais próxima)
 
     mockMelhorEnvioService.getFreight.mockResolvedValue([
@@ -165,5 +160,79 @@ describe('StoreService - CRUD + Nearest', () => {
     expect(result.name).toBe('Loja B');
     expect(result.type).toBe('LOJA');
     expect(result.value[0].description).toBe('PAC');
+  });
+
+  it('should use Melhor Envio if PDV is over 50km', async () => {
+    const store = {
+      storeName: 'PDV Longe',
+      type: 'PDV',
+      postalCode: '02000-000',
+      address1: 'Rua Longe',
+      city: 'São Paulo',
+      state: 'SP',
+      shippingTimeInDays: 3,
+      latitude: '-23.56',
+      longitude: '-46.62',
+    };
+
+    mockViaCepService.getAddressByCep.mockResolvedValue({
+      logradouro: 'Rua Teste',
+      localidade: 'São Paulo',
+      uf: 'SP',
+    });
+
+    mockRepo.findAll.mockResolvedValue([store]);
+    mockMapsService.calculateDistance.mockResolvedValue(60); // > 50 km
+
+    mockMelhorEnvioService.getFreight.mockResolvedValue([
+      {
+        delivery_time: 2,
+        id: 'PAC',
+        price: '21.00',
+        name: 'PAC',
+      },
+    ]);
+
+    const result = await service.findNearestByCep('01001-000');
+    expect(result.name).toBe('PDV Longe');
+    expect(result.type).toBe('PDV');
+    expect(result.value[0].description).toBe('PAC');
+  });
+
+  it('should use Melhor Envio for LOJA even if distance < 50km', async () => {
+    const store = {
+      storeName: 'Loja Perto',
+      type: 'LOJA',
+      postalCode: '03000-000',
+      address1: 'Rua Perto',
+      city: 'São Paulo',
+      state: 'SP',
+      shippingTimeInDays: 1,
+      latitude: '-23.57',
+      longitude: '-46.60',
+    };
+
+    mockViaCepService.getAddressByCep.mockResolvedValue({
+      logradouro: 'Av. Teste',
+      localidade: 'São Paulo',
+      uf: 'SP',
+    });
+
+    mockRepo.findAll.mockResolvedValue([store]);
+    mockMapsService.calculateDistance.mockResolvedValue(5); // perto
+
+    mockMelhorEnvioService.getFreight.mockResolvedValue([
+      {
+        delivery_time: 1,
+        id: 'SEDEX',
+        price: '25.00',
+        name: 'Sedex',
+      },
+    ]);
+
+    const result = await service.findNearestByCep('01001-000');
+    expect(result.name).toBe('Loja Perto');
+    expect(result.type).toBe('LOJA');
+    expect(result.value[0].description).toBe('Sedex');
   });
 });
