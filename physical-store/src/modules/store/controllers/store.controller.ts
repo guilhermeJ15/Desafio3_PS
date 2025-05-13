@@ -79,4 +79,3 @@ async findNearestByCep(@Param('cep') cep: string) {
   }
 
 }
-

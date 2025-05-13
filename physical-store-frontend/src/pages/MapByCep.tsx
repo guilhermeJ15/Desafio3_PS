@@ -1,32 +1,39 @@
-import React, { useState } from 'react';
-import { Box, Input, Button, Flex, Text } from '@chakra-ui/react';
-import { api } from '../services/api';
-import { GoogleMap, MarkerF, useLoadScript } from '@react-google-maps/api';
+import React, { useState } from "react";
+import { Box, Button, Input, Text, Flex } from "@chakra-ui/react";
+import { GoogleMap, useJsApiLoader, MarkerF } from "@react-google-maps/api";
+import { api } from "../services/api";
 
-interface StorePin {
-  position: { lat: number; lng: number };
-  title: string;
-}
-
-const containerStyle = { width: '100%', height: '500px' };
-const centerDefault = { lat: -8.0476, lng: -34.877 }; 
+const containerStyle = {
+  width: "100%",
+  height: "400px",
+};
 
 const MapByCep: React.FC = () => {
-  const [cep, setCep] = useState('');
-  const [pins, setPins] = useState<StorePin[]>([]);
-  const [error, setError] = useState('');
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
+  const [cep, setCep] = useState("");
+  const [error, setError] = useState("");
+  const [pins, setPins] = useState<{ position: { lat: number; lng: number }; title: string }[]>([]);
+
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY as string,
   });
 
   const onSearch = async () => {
-    setError('');
     try {
-      const res = await api.get(`/store/cep/${cep}`);
-      setPins(res.data.pins);
-    } catch (err: any) {
-      setPins([]);
-      setError(err.response?.data?.message || 'Erro ao buscar CEP');
+      setError("");
+      const response = await api.get(`/stores/cep/${cep}`);
+      const store = response.data;
+      
+      setPins([
+        {
+          position: {
+            lat: parseFloat(store.latitude),
+            lng: parseFloat(store.longitude),
+          },
+          title: store.name,
+        },
+      ]);
+    } catch (err) {
+      setError("Erro ao buscar loja pelo CEP. Verifique se o CEP está correto.");
     }
   };
 
@@ -42,15 +49,13 @@ const MapByCep: React.FC = () => {
           w="200px"
         />
         <Button colorScheme="blue" onClick={onSearch}>
-          Buscar no Mapa
+          Buscar
         </Button>
       </Flex>
+
       {error && <Text color="red.500">{error}</Text>}
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={pins.length ? pins[0].position : centerDefault}
-        zoom={pins.length ? 10 : 12}
-      >
+
+      <GoogleMap mapContainerStyle={containerStyle} zoom={12} center={pins[0]?.position || { lat: -15.7942, lng: -47.8822 }}>
         {pins.map((pin, idx) => (
           <MarkerF key={idx} position={pin.position} title={pin.title} />
         ))}
