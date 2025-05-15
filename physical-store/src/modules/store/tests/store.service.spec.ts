@@ -5,7 +5,7 @@ import { ViaCepService } from '../../../core/services/viacep.service';
 import { GoogleMapsService } from '../../../core/services/google-maps.service';
 import { MelhorEnvioService } from '../../../core/services/melhor-envio.service';
 
-describe('StoreService - CRUD + Nearest Store', () => {
+describe('StoreService - CRUD + Loja Mais Próxima', () => {
   let service: StoreService;
   let repo: StoreRepository;
 
@@ -62,7 +62,7 @@ describe('StoreService - CRUD + Nearest Store', () => {
   });
 
   // CRUD
-  it('should create a store', async () => {
+  it('deve criar uma loja', async () => {
     const dto: any = { ...mockStore };
     delete dto._id;
     const result = await service.create(dto);
@@ -70,30 +70,30 @@ describe('StoreService - CRUD + Nearest Store', () => {
     expect(result.storeName).toBe('Loja A');
   });
 
-  it('should update a store', async () => {
+  it('deve atualizar uma loja', async () => {
     const updated = await service.update('123', { storeName: 'Atualizada' });
     expect(repo.update).toHaveBeenCalledWith('123', { storeName: 'Atualizada' });
     expect(updated.storeName).toBe('Atualizada');
   });
 
-  it('should delete a store', async () => {
+  it('deve remover uma loja', async () => {
     const result = await service.remove('123');
     expect(repo.delete).toHaveBeenCalledWith('123');
     expect(result).toEqual({ deleted: true });
   });
 
-  it('should throw if updating a non-existent store', async () => {
+  it('deve lançar erro ao atualizar uma loja inexistente', async () => {
     jest.spyOn(repo, 'update').mockResolvedValueOnce(null);
     await expect(service.update('999', { storeName: 'Nada' })).rejects.toThrow('Loja não encontrada');
   });
 
-  it('should throw if deleting a non-existent store', async () => {
+  it('deve lançar erro ao remover uma loja inexistente', async () => {
     jest.spyOn(repo, 'delete').mockResolvedValueOnce(null);
     await expect(service.remove('999')).rejects.toThrow('Loja não encontrada');
   });
 
   
-  it('should return the nearest store by CEP', async () => {
+  it('deve retornar a loja mais próxima pelo CEP', async () => {
     const mockViaCep = {
       logradouro: 'Rua Teste',
       localidade: 'São Paulo',
@@ -123,7 +123,7 @@ describe('StoreService - CRUD + Nearest Store', () => {
     expect(result.value[0].description).toBe('Motoboy');
   });
 
-  it('should return a LOJA if it is closer than a PDV', async () => {
+  it('deve retornar uma LOJA se estiver mais próxima que um PDV', async () => {
     const mockStoreList = [
       { ...mockStore },
       {
@@ -162,7 +162,7 @@ describe('StoreService - CRUD + Nearest Store', () => {
     expect(result.value[0].description).toBe('PAC');
   });
 
-  it('should use Melhor Envio if PDV is over 50km', async () => {
+  it('deve usar Melhor Envio se o PDV estiver a mais de 50km', async () => {
     const store = {
       storeName: 'PDV Longe',
       type: 'PDV',
@@ -199,7 +199,7 @@ describe('StoreService - CRUD + Nearest Store', () => {
     expect(result.value[0].description).toBe('PAC');
   });
 
-  it('should use Melhor Envio for LOJA even if distance < 50km', async () => {
+  it('deve usar Melhor Envio para LOJA mesmo se a distância for < 50km', async () => {
     const store = {
       storeName: 'Loja Perto',
       type: 'LOJA',
